@@ -12,6 +12,7 @@ namespace CollisionStuff
     public bool isHittedLeft;
     public bool isHittedBottom;
     public bool isHittedTop;
+    public Vector2 surfacePoint;
   }
 
   public interface IBox
@@ -47,6 +48,7 @@ namespace CollisionStuff
       {
         Vector2 surfacePoint = Physics2D.ClosestPoint(_box.getPosition(), bottomResults[0]);
         _hitConsumer.isHittedBottom = true;
+        _hitConsumer.surfacePoint = surfacePoint;
       }
       else
       {
