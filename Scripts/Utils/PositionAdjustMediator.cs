@@ -1,0 +1,69 @@
+using UnityEngine;
+
+namespace PositionAdjust
+{
+  interface ICollision
+  {
+    public Vector2 GetNormal();
+    public Vector2 GetSize();
+    public Vector2 GetPosition();
+  }
+  class CollisionBasic:ICollision {
+
+    Vector2 _position;
+    Vector2 _normal;
+    Vector2 _size;
+
+    public CollisionBasic(Vector2 position, Vector2 normal,Vector2 size ){
+      _position = position;
+      _normal = normal;
+      _size = size;
+    }
+
+    public Vector2 GetNormal()
+    {
+      return _normal;
+    }
+
+    public Vector2 GetPosition()
+    {
+      return _position;
+    }
+
+    public Vector2 GetSize()
+    {
+      return _size;
+    }
+  }
+  class PositionAdjustMediator
+  {
+
+    private IBox _box;
+    private ICollision _collision;
+    public PositionAdjustMediator(ICollision collision, IBox box)
+    {
+      _collision = collision;
+      _box = box;
+      //* static public Vector3 AdjustPosition(CollisionExpanded collidedInfo, Vector3 position, BoxCollider2D boxCollider)
+      //* {
+      //* Vector3 normal = collidedInfo.normal.normalized;
+
+      //* Vector3 difference = -Mathf.Sign(normal.x) * 
+      //*(collidedInfo.collider.transform.position - position);
+      //* float gap = difference.x - collidedInfo.collider.bounds.size.x / 2 - boxCollider.size.x / 2;
+      //* Vector3 correctedPosition = position - new Vector3(normal.x * gap, normal.y * gap, 0f);
+      //* return correctedPosition;
+      //* }
+    }
+    public Vector2 AdjustPosition()
+    {
+      Vector2 normal = _collision.GetNormal();
+      Vector2 difference = -Mathf.Sign(normal.x) * (_collision.GetPosition() - _box.GetPosition());
+      Vector2 collisionSize = _collision.GetSize();
+      Vector2 boxSize = _box.GetSize();
+      float gap = difference.x - collisionSize.x / 2 - boxSize.x / 2;
+      Vector2 correctedPosition = _box.GetPosition() - new Vector2(normal.x, normal.y) * gap;
+      return correctedPosition;
+    }
+  }
+}
