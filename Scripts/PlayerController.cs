@@ -2,7 +2,6 @@
 using UnityEngine;
 using System;
 using CollisionStuff;
-using PositionAdjust;
 using PlayerInput;
 using InputStrategy;
 using System.Collections.Generic;
@@ -28,25 +27,19 @@ public class PlayerController : MonoBehaviour
   private BoxCollider2D _boxCollider;
   private Rigidbody2D _rigidBody;
   private float _horizontalInput;
-  private readonly float MAX_SPEED = 5f;
-  private float _gravity = 6f;
   private IgnoreSurroundings _ignoreSurroundings;
   private HitConsumerLogic _hitConsumerLogic;
   private PlayerInputLogic _playerInputLogic;
   private PositionAdjustManager _positionAdjustManager;
   public static InputManagerStrategy inputManagerStrategy;
   private StateMachine _playerStateMachine;
+  private float _groundIgnoreTimeStart;
 
   private Player _player;
   private IBox BoxFromGO()
   {
     BasicBox box = new BasicBox(transform, _boxCollider.size);
     return box;
-  }
-
-  private bool PressedMovement()
-  {
-    return Mathf.Abs(PlayerController.inputManagerStrategy.GetHorizontalMovement()) > Mathf.Epsilon;
   }
 
   private void Awake()
@@ -67,12 +60,10 @@ public class PlayerController : MonoBehaviour
     _playerStateMachine = new StateMachine();
 
     StateMachine.idleState = new IdleState("IdleState", _player, _hitConsumer, _adjustments);
-    StateMachine.walkingState = new WalkingState("WalkingState", _player, _hitConsumer,_adjustments,_ignoreSurroundings);
+    StateMachine.walkingState = new WalkingState("WalkingState", _player, _hitConsumer, _adjustments, _ignoreSurroundings);
 
+    CreatePositionAdjustments();
 
-    _adjustments.Add(StateMachine.idleState.GetType(), new PositionAdjustBaseStrategy(_hitConsumer,_player,_ignoreSurroundings));
-    _adjustments.Add(StateMachine.walkingState.GetType(), new PositionAdjustWithIgnoreWallStrategy(_hitConsumer,_player,_ignoreSurroundings));
-    
     When(StateMachine.idleState, StateMachine.walkingState, () => Mathf.Abs(Input.GetAxis("Horizontal")) > 0f);
     When(StateMachine.walkingState, StateMachine.idleState, () => Mathf.Abs(PlayerController.inputManagerStrategy.GetHorizontalMovement()) < Mathf.Epsilon);
 
@@ -82,9 +73,15 @@ public class PlayerController : MonoBehaviour
     }
     Init();
   }
+
+  private void CreatePositionAdjustments()
+  {
+    _adjustments.Add(StateMachine.idleState.GetType(), new PositionAdjustBaseStrategy(_hitConsumer, _player, _ignoreSurroundings));
+    _adjustments.Add(StateMachine.walkingState.GetType(), new PositionAdjustWithIgnoreWallStrategy(_hitConsumer, _player, _ignoreSurroundings));
+  }
+
   private IPositionAdjustStrategy _currentStrategy;
   private void Init(){
-
     _playerStateMachine.Initialize();
     BaseState currentState = _playerStateMachine.GetCurrentState();
     _currentStrategy = _adjustments[currentState.GetType()];
@@ -95,51 +92,7 @@ public class PlayerController : MonoBehaviour
     _horizontalInput = PlayerController.inputManagerStrategy.GetHorizontalMovement();
     _playerStateMachine.LogicUpdate();
   }
-  private float _groundIgnoreTimeStart;
-  private float _wallIgnoreTimeStart;
 
-  private void EnableIgnoreWallTimer()
-  {
-    _wallIgnoreTimeStart = Time.time;
-    _ignoreSurroundings.IsWallIgnored = true;
-  }
-
-  private void EnableIgnoreGroundTimer()
-  {
-    _ignoreSurroundings.IsGroundIgnored = true;
-    _groundIgnoreTimeStart = Time.time;
-  }
-  private void LandDown(ref Vector2 targetVelocity)
-  {
-    targetVelocity.y = 0f;
-    transform.position = new Vector3(transform.position.x, _hitConsumer.surfacePoint.y + _box.GetSize().y / 2, transform.position.z);
-  }
-
-  // private void MovementWithoutWall()
-  // {
-  //   Vector2 targetVelocity = _rigidBody.velocity;
-  //   targetVelocity.x = _horizontalInput * MAX_SPEED;
-  //   if (!_hitConsumer.isHittedBottom)
-  //   {
-  //     targetVelocity.y -= _gravity * Time.fixedDeltaTime;
-  //   }
-  //   else
-  //   {
-  //     if (!_ignoreSurroundings.IsGroundIgnored)
-  //     {
-  //       LandDown(ref targetVelocity);
-  //     }
-  //   }
-  //   if (Input.GetKey(KeyCode.Space))
-  //   {
-  //     EnableIgnoreGroundTimer();
-  //     targetVelocity.y = 5f;
-  //   }
-  //   _rigidBody.velocity = targetVelocity;
-  // }
-  private bool _isJumpAwayFromWall;
-  private bool _hasInitialInput;
-  private float _velocityAtBeginingOfWallJump;
   private Dictionary<Type,IPositionAdjustStrategy> _adjustments = new Dictionary<Type, IPositionAdjustStrategy>();
 
   private IPositionAdjustStrategy GetAdjustStrategy(){
