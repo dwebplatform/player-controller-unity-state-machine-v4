@@ -24,19 +24,24 @@ public class WalkingState : BaseState
   {
     base.HandleInput();
   }
+
+  private bool IsMoveInversedLeftWall(){
+    return _hitConsumer.isHittedLeft && PlayerController.inputManagerStrategy.GetHorizontalMovement() > 0f;
+  }
+  private bool IsMoveInversedRightWall(){
+    return _hitConsumer.isHittedRight && PlayerController.inputManagerStrategy.GetHorizontalMovement() < 0f;
+  }
   public override void LogicUpdate()
   {
     base.LogicUpdate();
-
-    if (_hitConsumer.isHittedLeft && PlayerController.inputManagerStrategy.GetHorizontalMovement() > 0f)
+    if (IsMoveInversedLeftWall())
     {
       EnableLeftWallIgnorance();
     }
-    if (_hitConsumer.isHittedRight && PlayerController.inputManagerStrategy.GetHorizontalMovement() < 0f)
+    if (IsMoveInversedRightWall())
     {
       EnagleRightWallIgnorance();
     }
-
   }
 
   private void EnagleRightWallIgnorance()
@@ -51,18 +56,27 @@ public class WalkingState : BaseState
     _ignoreSurroundings.WallStartTime = Time.time;
   }
 
+  private bool IsInputInvertedToWall(){
+    return (_hitConsumer.isHittedRight && PlayerController.inputManagerStrategy.GetHorizontalMovement() < 0f)||(_hitConsumer.isHittedLeft && PlayerController.inputManagerStrategy.GetHorizontalMovement() > 0f); 
+  }
+  private bool HasHittedWall(){
+    return (_hitConsumer.isHittedLeft || _hitConsumer.isHittedRight);
+  }
   public override void PhysicsUpdate()
   {
     base.PhysicsUpdate();
 
-    if(_hitConsumer.isHittedRight && PlayerController.inputManagerStrategy.GetHorizontalMovement()<0f){
+    if(IsInputInvertedToWall() || !HasHittedWall()){
       _player._velocity.x = PlayerController.inputManagerStrategy.GetHorizontalMovement() * _player.MAX_SPEED;
     }
-    else if(_hitConsumer.isHittedLeft && PlayerController.inputManagerStrategy.GetHorizontalMovement()>0f){
-      _player._velocity.x = PlayerController.inputManagerStrategy.GetHorizontalMovement() * _player.MAX_SPEED;
+
+    if (!_hitConsumer.isHittedBottom)
+    {
+      _player._velocity.y -= _player._gravity * Time.fixedDeltaTime;
     }
-   else if(!(_hitConsumer.isHittedLeft || _hitConsumer.isHittedRight)){
-      _player._velocity.x = PlayerController.inputManagerStrategy.GetHorizontalMovement() * _player.MAX_SPEED;
+    else
+    {
+      _player._velocity.y = 0f;
     }
   }
   public override void Exit()

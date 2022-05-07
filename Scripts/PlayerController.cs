@@ -29,7 +29,6 @@ public class PlayerController : MonoBehaviour
   private float _horizontalInput;
   private IgnoreSurroundings _ignoreSurroundings;
   private HitConsumerLogic _hitConsumerLogic;
-  private PlayerInputLogic _playerInputLogic;
   private PositionAdjustManager _positionAdjustManager;
   public static InputManagerStrategy inputManagerStrategy;
   private StateMachine _playerStateMachine;
@@ -50,7 +49,6 @@ public class PlayerController : MonoBehaviour
     _ignoreSurroundings = new IgnoreSurroundings();
     _hitConsumer = new HitConsumer();
     _hitConsumerLogic = new HitConsumerLogic(_hitConsumer);
-    _playerInputLogic = new PlayerInputLogic(_hitConsumerLogic);
 
     PlayerController.inputManagerStrategy = new InputManagerStrategy(new InputBaseHandler());
     _box = BoxFromGO();
@@ -64,7 +62,7 @@ public class PlayerController : MonoBehaviour
 
     CreatePositionAdjustments();
 
-    When(StateMachine.idleState, StateMachine.walkingState, () => Mathf.Abs(Input.GetAxis("Horizontal")) > 0f);
+    When(StateMachine.idleState, StateMachine.walkingState, () => Mathf.Abs(Input.GetAxis("Horizontal")) > Mathf.Epsilon);
     When(StateMachine.walkingState, StateMachine.idleState, () => Mathf.Abs(PlayerController.inputManagerStrategy.GetHorizontalMovement()) < Mathf.Epsilon);
 
     void When(BaseState from, BaseState to, Func<bool> predicate)
