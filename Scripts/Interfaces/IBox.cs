@@ -2,7 +2,7 @@ using UnityEngine;
 public interface IBox
   {
     //* width, height
-    Vector2 GetSize();
+    public Vector2 GetSize();
     //* x, y of center
-    Vector2 GetPosition();
+    public Vector2 GetPosition();
   }

@@ -8,8 +8,8 @@ namespace PositionAdjust
     public Vector2 GetSize();
     public Vector2 GetPosition();
   }
-  class CollisionBasic:ICollision {
 
+  class CollisionBasic: ICollision {
     Vector2 _position;
     Vector2 _normal;
     Vector2 _size;
@@ -37,23 +37,12 @@ namespace PositionAdjust
   }
   class PositionAdjustMediator
   {
-
     private IBox _box;
     private ICollision _collision;
     public PositionAdjustMediator(ICollision collision, IBox box)
     {
       _collision = collision;
       _box = box;
-      //* static public Vector3 AdjustPosition(CollisionExpanded collidedInfo, Vector3 position, BoxCollider2D boxCollider)
-      //* {
-      //* Vector3 normal = collidedInfo.normal.normalized;
-
-      //* Vector3 difference = -Mathf.Sign(normal.x) * 
-      //*(collidedInfo.collider.transform.position - position);
-      //* float gap = difference.x - collidedInfo.collider.bounds.size.x / 2 - boxCollider.size.x / 2;
-      //* Vector3 correctedPosition = position - new Vector3(normal.x * gap, normal.y * gap, 0f);
-      //* return correctedPosition;
-      //* }
     }
     public Vector2 AdjustPosition()
     {
@@ -67,3 +56,4 @@ namespace PositionAdjust
     }
   }
 }
+
