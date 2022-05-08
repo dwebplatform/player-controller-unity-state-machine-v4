@@ -59,6 +59,74 @@ namespace PositionAdjustManagerStrategy
       }
     }
   }
+
+   class PositionAdjustWithIgnoreNearWallInitialStrategy : IPositionAdjustStrategy
+  {
+    private HitConsumer _hitConsumer;
+    private Player _player;
+    private IgnoreSurroundings _ignoreSurroundings;
+    private  InputManagerStrategy _inputManagerStrategy;
+    public PositionAdjustWithIgnoreNearWallInitialStrategy(
+    HitConsumer hitConsumer, 
+    Player player, 
+    InputManagerStrategy inputManagerStrategy,
+    IgnoreSurroundings ignoreSurroundings)
+    {
+      _hitConsumer = hitConsumer;
+      _player = player;
+      _ignoreSurroundings = ignoreSurroundings;
+      _inputManagerStrategy = inputManagerStrategy;
+    }
+    public void MakeAdjustment()
+    {
+      //* если пытается уйти, со стенки, то не игнорируем
+      if(_hitConsumer.isHittedLeft && !(Input.GetAxis("Horizontal")>0f)){
+        _player._velocity.x = 0f;
+        _player._transform.position = AdjustFinder.AdjustWall(_hitConsumer.GetLeftHit(), _player._box);
+      } 
+      if(_hitConsumer.isHittedRight && !(Input.GetAxis("Horizontal")<0f)){
+        _player._velocity.x = 0f;
+        _player._transform.position = AdjustFinder.AdjustWall(_hitConsumer.GetRightHit(), _player._box);
+      }
+      if (_hitConsumer.isHittedBottom && !_ignoreSurroundings.IsGroundIgnored)
+      {
+        _player._transform.position = new Vector2(_player._transform.position.x, _hitConsumer.surfacePoint.y + _player._box.GetSize().y / 2);
+        _player._velocity.y = 0f;
+      }
+    }
+  }
+
+  class PositionAdjustWithJumpAwayInitialStrategy : IPositionAdjustStrategy
+  {
+    private HitConsumer _hitConsumer;
+    private Player _player;
+    private IgnoreSurroundings _ignoreSurroundings;
+    private  InputManagerStrategy _inputManagerStrategy;
+    public PositionAdjustWithJumpAwayInitialStrategy(
+    HitConsumer hitConsumer, 
+    Player player, 
+    InputManagerStrategy inputManagerStrategy,
+    IgnoreSurroundings ignoreSurroundings)
+    {
+      _hitConsumer = hitConsumer;
+      _player = player;
+      _ignoreSurroundings = ignoreSurroundings;
+      _inputManagerStrategy = inputManagerStrategy;
+    }
+    public void MakeAdjustment()
+    {
+      if (_hitConsumer.isHittedLeft && !_ignoreSurroundings.IsWallIgnored)
+      {
+        _player._transform.position = AdjustFinder.AdjustWall(_hitConsumer.GetLeftHit(), _player._box);
+        _player._velocity.x = 0f;
+      }
+      else if (_hitConsumer.isHittedRight && !_ignoreSurroundings.IsWallIgnored)
+      {
+        _player._transform.position = AdjustFinder.AdjustWall(_hitConsumer.GetRightHit(), _player._box);
+        _player._velocity.x = 0f;
+      }
+    }
+  }
   class PositionAdjustWithIgnoreWallStrategy : IPositionAdjustStrategy
   {
     private HitConsumer _hitConsumer;

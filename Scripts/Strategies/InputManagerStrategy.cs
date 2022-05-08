@@ -12,7 +12,7 @@ namespace InputStrategy {
   
   public class InputBaseHandler:IInputStrategy {
     public float GetHorizontalMovement(){
-      return Input.GetAxis("Horizontal");
+      return Input.GetAxisRaw("Horizontal");
     }
     public bool GetJumpPressed(){
       return Input.GetKey(KeyCode.Space);

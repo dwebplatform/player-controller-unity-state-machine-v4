@@ -21,6 +21,7 @@ class StateMachine
   }
   public static IdleState idleState;
   public static GrabWallState grabWallState;
+  public static JumpAwayFromWallGrabState jumpAwayFromWallGrabState;
   public static JumpingState jumpingState;
   public static WalkingState walkingState;
   public static JumpNearWallState jumpNearWallState;
