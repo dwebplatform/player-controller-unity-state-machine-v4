@@ -74,10 +74,7 @@ public class WalkingState : BaseState
     {
       _player._velocity.y -= _player._gravity * Time.fixedDeltaTime;
     }
-    else
-    {
-      _player._velocity.y = 0f;
-    }
+   
   }
   public override void Exit()
   {

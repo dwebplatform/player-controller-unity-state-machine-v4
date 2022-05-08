@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System;
 using CollisionStuff;
@@ -13,7 +12,6 @@ public class IgnoreSurroundings
   public bool IsWallIgnored;
   public bool IsWallLeftIgnored;
   public bool IsWallRightIgnored;
-
   public float WallStartTime;
 
   public float GroundStartTime;
@@ -59,8 +57,24 @@ public class PlayerController : MonoBehaviour
 
     StateMachine.idleState = new IdleState("IdleState", _player, _hitConsumer, _adjustments);
     StateMachine.walkingState = new WalkingState("WalkingState", _player, _hitConsumer, _adjustments, _ignoreSurroundings);
+    StateMachine.jumpingState = new JumpingState("JumpingState", _player, _hitConsumer, _ignoreSurroundings);
+    StateMachine.jumpNearWallState = new JumpNearWallState("JumpingState", _player, _hitConsumer, _ignoreSurroundings);
+    
+    StateMachine.grabWallState = new GrabWallState("GrabWallState", _player, _hitConsumer, _ignoreSurroundings);
 
     CreatePositionAdjustments();
+
+    When(StateMachine.idleState, StateMachine.jumpingState, () => _hitConsumerLogic.GetClosestWall() == null && PlayerController.inputManagerStrategy.GetJumpPressed());
+    When(StateMachine.walkingState, StateMachine.jumpingState, () =>_hitConsumerLogic.GetClosestWall() == null && PlayerController.inputManagerStrategy.GetJumpPressed());
+    
+    When(StateMachine.idleState, StateMachine.jumpNearWallState, () => _hitConsumerLogic.GetClosestWall() != null && PlayerController.inputManagerStrategy.GetJumpPressed());
+    When(StateMachine.walkingState, StateMachine.jumpNearWallState, () =>_hitConsumerLogic.GetClosestWall() != null && PlayerController.inputManagerStrategy.GetJumpPressed());
+    
+    When(StateMachine.jumpingState, StateMachine.idleState, () => _hitConsumer.isHittedBottom && !_ignoreSurroundings.IsGroundIgnored);
+
+    When(StateMachine.jumpingState, StateMachine.grabWallState, () =>_hitConsumerLogic.HittedAnyWalls());
+
+    When(StateMachine.grabWallState, StateMachine.idleState, () => _hitConsumer.isHittedBottom);
 
     When(StateMachine.idleState, StateMachine.walkingState, () => Mathf.Abs(Input.GetAxis("Horizontal")) > Mathf.Epsilon);
     When(StateMachine.walkingState, StateMachine.idleState, () => Mathf.Abs(PlayerController.inputManagerStrategy.GetHorizontalMovement()) < Mathf.Epsilon);
@@ -76,26 +90,37 @@ public class PlayerController : MonoBehaviour
   {
     _adjustments.Add(StateMachine.idleState.GetType(), new PositionAdjustBaseStrategy(_hitConsumer, _player, _ignoreSurroundings));
     _adjustments.Add(StateMachine.walkingState.GetType(), new PositionAdjustWithIgnoreWallStrategy(_hitConsumer, _player, _ignoreSurroundings));
+    _adjustments.Add(StateMachine.jumpingState.GetType(), new PositionAdjustWithGravityIgnoreStrategy(_hitConsumer, _player,PlayerController.inputManagerStrategy, _ignoreSurroundings));
   }
 
   private IPositionAdjustStrategy _currentStrategy;
-  private void Init(){
+  private void Init()
+  {
     _playerStateMachine.Initialize();
     BaseState currentState = _playerStateMachine.GetCurrentState();
     _currentStrategy = _adjustments[currentState.GetType()];
-     _positionAdjustManager = new PositionAdjustManager(_currentStrategy);
+    _positionAdjustManager = new PositionAdjustManager(_currentStrategy);
   }
   void Update()
   {
     _horizontalInput = PlayerController.inputManagerStrategy.GetHorizontalMovement();
     _playerStateMachine.LogicUpdate();
   }
-
-  private Dictionary<Type,IPositionAdjustStrategy> _adjustments = new Dictionary<Type, IPositionAdjustStrategy>();
-
-  private IPositionAdjustStrategy GetAdjustStrategy(){
-    return _adjustments[_playerStateMachine.GetCurrentState().GetType()];
+  private Dictionary<Type, IPositionAdjustStrategy> _adjustments = new Dictionary<Type, IPositionAdjustStrategy>();
+  private IPositionAdjustStrategy GetAdjustStrategy()
+  {
+    if (_adjustments.ContainsKey(_playerStateMachine.GetCurrentState().GetType()))
+    {
+      return _adjustments[_playerStateMachine.GetCurrentState().GetType()];
+    }
+    else
+    {
+      return null;
+    }
   }
+
+  private bool _jumpedNearWall;
+  private Nullable<RaycastHit2D> _nearestWall;
   void FixedUpdate()
   {
     _collisionContext.CollisionCheck();
@@ -107,10 +132,16 @@ public class PlayerController : MonoBehaviour
 
     _rigidBody.velocity = _player._velocity;
 
-    if(_ignoreSurroundings.IsWallLeftIgnored || _ignoreSurroundings.IsWallRightIgnored){
+    if (_ignoreSurroundings.IsWallLeftIgnored || _ignoreSurroundings.IsWallRightIgnored)
+    {
       CheckFinishIgnoreWall();
     }
+    if (_ignoreSurroundings.IsGroundIgnored)
+    {
+      CheckFinishIgnoreGravity();
+    }
   }
+
 
   private void CheckFinishIgnoreWall()
   {
@@ -126,7 +157,7 @@ public class PlayerController : MonoBehaviour
   }
   private void CheckFinishIgnoreGravity()
   {
-    float delta = Time.time - _groundIgnoreTimeStart;
+    float delta = Time.time - _ignoreSurroundings.GroundStartTime;
     if (delta < 0.2f)
     {
       _ignoreSurroundings.IsGroundIgnored = true;

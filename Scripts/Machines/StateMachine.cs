@@ -20,7 +20,10 @@ class StateMachine
     return _currentState;
   }
   public static IdleState idleState;
+  public static GrabWallState grabWallState;
+  public static JumpingState jumpingState;
   public static WalkingState walkingState;
+  public static JumpNearWallState jumpNearWallState;
   private Dictionary<Type, List<Transition>> _transitions = new Dictionary<Type, List<Transition>>();
   private List<Transition> currentTransitions = new List<Transition>();
   private List<Transition> emptyTransitions = new List<Transition>(0);

@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-
+using System;
 namespace CollisionStuff
 {
   public interface ICollisionStrategy
@@ -18,6 +18,7 @@ namespace CollisionStuff
     public List<RaycastHit2D> rightHits;
     public List<RaycastHit2D> leftHits;
 
+    public Nullable<RaycastHit2D> _closestWall;
     public RaycastHit2D GetLeftHit()
     {
       return leftHits[0];
@@ -111,11 +112,22 @@ namespace CollisionStuff
           leftHits.Add(leftHit);
         }
       }
+
       _hitConsumer.isHittedRight = isHittedRight;
       _hitConsumer.isHittedLeft = isHittedLeft;
       _hitConsumer.leftHits = leftHits;
       _hitConsumer.rightHits = rightHits;
-
+      _hitConsumer._closestWall = GetClosestWall(_hitConsumer);
+    }
+    private Nullable<RaycastHit2D> GetClosestWall(HitConsumer hitConsumer){
+      if(hitConsumer.isHittedLeft){
+        return hitConsumer.leftHits[0];
+      }
+      if(hitConsumer.isHittedRight)
+      {
+        return hitConsumer.rightHits[0];
+      }
+      return null;
     }
     public void CollisionCheck()
     {
