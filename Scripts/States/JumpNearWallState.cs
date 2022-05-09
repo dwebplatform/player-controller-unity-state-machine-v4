@@ -25,7 +25,7 @@ public class JumpNearWallState : BaseState
   public override void Enter()
   {
     base.Enter();
-    _player._velocity.y = 5f;
+    _player._velocity.y = _player.JUMP_MAGNITUDE;
     if (_hitConsumer.isHittedBottom)
     {
       EnableGroundIgnorance();

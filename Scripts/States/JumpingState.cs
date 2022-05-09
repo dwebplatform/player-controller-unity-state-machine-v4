@@ -16,9 +16,9 @@ public class JumpingState : BaseState
   public override void Enter()
   {
     base.Enter();
-    //*
-    _player._velocity.y = 5f;
-    //*EnableTie
+
+    _player._velocity.y = _player.JUMP_MAGNITUDE;
+
     if (_hitConsumer.isHittedBottom)
     {
       EnableGroundIgnorance();
@@ -47,7 +47,11 @@ public class JumpingState : BaseState
     
     if (!_hitConsumer.isHittedBottom)
     {
-      _player._velocity.y -= _player._gravity * Time.fixedDeltaTime;
+      if(_player._velocity.y>0f){
+        _player._velocity.y -= _player._gravity * Time.fixedDeltaTime;
+      } else {
+        _player._velocity.y -= _player.DOWN_GRAVITY * Time.fixedDeltaTime;
+      }
     }
   }
 }

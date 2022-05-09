@@ -72,7 +72,11 @@ public class WalkingState : BaseState
 
     if (!_hitConsumer.isHittedBottom)
     {
-      _player._velocity.y -= _player._gravity * Time.fixedDeltaTime;
+      if(_player._velocity.y>0f){
+        _player._velocity.y -= _player._gravity * Time.fixedDeltaTime;
+      } else {
+        _player._velocity.y -= _player.DOWN_GRAVITY * Time.fixedDeltaTime;
+      }
     }
    
   }

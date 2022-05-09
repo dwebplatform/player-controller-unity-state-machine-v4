@@ -20,7 +20,7 @@ public class JumpAwayFromWallGrabState : BaseState
   public override void Enter()
   {
     base.Enter();
-    _player._velocity.y = 5f;
+    _player._velocity.y = _player.JUMP_MAGNITUDE;
     _isStartWithInialZeroInput = Mathf.Abs(PlayerController.inputManagerStrategy.GetHorizontalMovement()) < Mathf.Epsilon;
     wallHitNormal = _hitConsumer._closestWall.Value.normal;
     EnableWallCheckIgnorance();
