@@ -124,7 +124,6 @@ namespace PositionAdjustManagerStrategy
       {
         _player._transform.position = AdjustFinder.AdjustWall(_hitConsumer.GetRightHit(), _player._box);
         _player._velocity.x = 0f;
-        Debug.Log("СРАБОТАЛО");
       }
       if (_hitConsumer.isHittedBottom)
       {
