@@ -124,6 +124,12 @@ namespace PositionAdjustManagerStrategy
       {
         _player._transform.position = AdjustFinder.AdjustWall(_hitConsumer.GetRightHit(), _player._box);
         _player._velocity.x = 0f;
+        Debug.Log("СРАБОТАЛО");
+      }
+      if (_hitConsumer.isHittedBottom)
+      {
+        _player._transform.position = new Vector2(_player._transform.position.x, _hitConsumer.surfacePoint.y + _player._box.GetSize().y / 2);
+        _player._velocity.y = 0f;
       }
     }
   }

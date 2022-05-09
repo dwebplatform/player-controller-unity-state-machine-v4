@@ -79,8 +79,8 @@ public class PlayerController : MonoBehaviour
     When(StateMachine.idleState, StateMachine.jumpingState, () => _hitConsumerLogic.GetClosestWall() == null && PlayerController.inputManagerStrategy.GetJumpPressed());
     When(StateMachine.walkingState, StateMachine.jumpingState, () => _hitConsumerLogic.GetClosestWall() == null && PlayerController.inputManagerStrategy.GetJumpPressed());
 
-    When(StateMachine.jumpAwayFromWallGrabState, StateMachine.idleState,()=>
-    !_ignoreSurroundings.IsGroundIgnored && _hitConsumer.isHittedBottom);
+    When(StateMachine.jumpAwayFromWallGrabState, StateMachine.idleState,()=>!_ignoreSurroundings.IsGroundIgnored && _hitConsumer.isHittedBottom);
+    When(StateMachine.jumpAwayFromWallGrabState, StateMachine.grabWallState,()=>!_ignoreSurroundings.IsWallIgnored && _hitConsumerLogic.HittedAnyWalls());
 
     When(StateMachine.idleState, StateMachine.jumpNearWallState, () => _hitConsumerLogic.GetClosestWall() != null && PlayerController.inputManagerStrategy.GetJumpPressed());
     When(StateMachine.walkingState, StateMachine.jumpNearWallState, () => _hitConsumerLogic.GetClosestWall() != null && PlayerController.inputManagerStrategy.GetJumpPressed());
@@ -93,7 +93,6 @@ public class PlayerController : MonoBehaviour
 
     When(StateMachine.jumpingState, StateMachine.grabWallState, () => _hitConsumerLogic.HittedAnyWalls());
 
-    When(StateMachine.jumpAwayFromWallGrabState, StateMachine.grabWallState,()=>!_ignoreSurroundings.IsWallIgnored && _hitConsumerLogic.HittedAnyWalls());
 
     //* разрешать входить в это состояние, ТОЛЬКО при условии, что не нажали на кнопку придавливающую к стене
     When(StateMachine.grabWallState,StateMachine.jumpAwayFromWallGrabState,() => !CheckPressTowardWall() && Input.GetKey(KeyCode.Space));
